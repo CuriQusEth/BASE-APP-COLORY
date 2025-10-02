@@ -3,7 +3,11 @@
 
     <header class="text-center mb-6">
       <h1 class="text-4xl md:text-5xl font-bold tracking-wider text-cyan-400">Color Memory</h1>
-      <p class="text-gray-400 mt-2">Memorize the sequence. Repeat it back.</p>
+      @if(farcasterUser(); as user) {
+        <p class="text-gray-400 mt-2">Welcome back, {{ user.displayName }}!</p>
+      } @else {
+        <p class="text-gray-400 mt-2">Memorize the sequence. Repeat it back.</p>
+      }
     </header>
 
     <div class="flex justify-between items-center mb-4 px-4 py-3 bg-gray-800/50 rounded-lg">
@@ -88,51 +92,40 @@
                   <span>Completed!</span>
                 </div>
               } @else {
-                <div class="w-full bg-gray-600 rounded-full h-2.5">
-                  <div class="bg-cyan-400 h-2.5 rounded-full transition-all duration-300" [style.width.%]="(task.progress / task.target) * 100"></div>
+                <div class="w-full bg-gray-700 rounded-full h-2.5">
+                  <div class="bg-cyan-500 h-2.5 rounded-full" [style.width.%]="(task.progress / task.target) * 100"></div>
                 </div>
-                <p class="text-xs text-center text-gray-400 mt-1">{{ task.progress > task.target ? task.target : task.progress }} / {{ task.target }}</p>
+                <p class="text-center text-xs text-gray-400 mt-1">{{ task.progress }} / {{ task.target }}</p>
               }
             </div>
           }
-        
-          <!-- Difficulty Setting -->
-          <div>
-            <h3 class="text-sm font-bold uppercase text-gray-400 tracking-widest mb-2 text-center">Difficulty</h3>
-            <div class="grid grid-cols-3 gap-2">
-              <button (click)="setDifficulty('easy')" class="px-2 py-2 text-sm font-semibold rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'easy'" [class.bg-gray-700]="difficulty() !== 'easy'" [class.hover:bg-gray-600]="difficulty() !== 'easy'">Easy</button>
-              <button (click)="setDifficulty('medium')" class="px-2 py-2 text-sm font-semibold rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'medium'" [class.bg-gray-700]="difficulty() !== 'medium'" [class.hover:bg-gray-600]="difficulty() !== 'medium'">Medium</button>
-              <button (click)="setDifficulty('hard')" class="px-2 py-2 text-sm font-semibold rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'hard'" [class.bg-gray-700]="difficulty() !== 'hard'" [class.hover:bg-gray-600]="difficulty() !== 'hard'">Hard</button>
-            </div>
-          </div>
+          
+          <button (click)="startGame()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-bold py-3 px-4 rounded-lg text-xl transition-transform transform hover:scale-105">
+            {{ gameState() === 'gameover' ? 'Play Again' : 'Start Game' }}
+          </button>
 
-          <!-- Color Palette Setting -->
-          <div>
-            <h3 class="text-sm font-bold uppercase text-gray-400 tracking-widest mb-2 text-center">Color Palette</h3>
-            <div class="bg-gray-700 rounded-md p-2">
-              <div class="flex items-center justify-between mb-2">
-                <button (click)="changePalette(-1)" class="px-3 py-1 rounded-full text-lg font-bold hover:bg-gray-600 transition-colors">&lt;</button>
-                <span class="text-sm font-semibold text-cyan-300 truncate px-1">{{ currentPaletteName() }}</span>
-                <button (click)="changePalette(1)" class="px-3 py-1 rounded-full text-lg font-bold hover:bg-gray-600 transition-colors">&gt;</button>
+          <!-- Settings -->
+          <div class="pt-4 space-y-4">
+            <div class="flex justify-center items-center gap-4">
+              <h3 class="text-lg font-semibold text-gray-300">Difficulty:</h3>
+              <div class="flex gap-2">
+                <button (click)="setDifficulty('easy')" class="px-3 py-1 text-sm rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'easy'" [class.text-gray-900]="difficulty() === 'easy'" [class.bg-gray-700]="difficulty() !== 'easy'">Easy</button>
+                <button (click)="setDifficulty('medium')" class="px-3 py-1 text-sm rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'medium'" [class.text-gray-900]="difficulty() === 'medium'" [class.bg-gray-700]="difficulty() !== 'medium'">Medium</button>
+                <button (click)="setDifficulty('hard')" class="px-3 py-1 text-sm rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'hard'" [class.text-gray-900]="difficulty() === 'hard'" [class.bg-gray-700]="difficulty() !== 'hard'">Hard</button>
               </div>
-              <div class="grid grid-cols-9 gap-1 mx-auto max-w-[180px]">
-                @for(color of tileColors(); track color) {
-                  <div class="h-5 w-5 rounded-sm" [class]="color"></div>
-                }
+            </div>
+
+            <div class="flex justify-center items-center gap-4">
+              <h3 class="text-lg font-semibold text-gray-300">Palette:</h3>
+              <div class="flex items-center gap-2">
+                <button (click)="changePalette(-1)" class="px-2 py-1 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors">&lt;</button>
+                <span class="text-sm w-32 text-center">{{ currentPaletteName() }}</span>
+                <button (click)="changePalette(1)" class="px-2 py-1 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors">&gt;</button>
               </div>
             </div>
           </div>
         </div>
-
-        <button (click)="startGame()" class="w-full max-w-xs px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold text-xl rounded-lg shadow-lg transition-transform transform hover:scale-105 mt-2">
-          @if (gameState() === 'gameover') {
-            <span>Play Again</span>
-          } @else {
-            <span>Start Game</span>
-          }
-        </button>
       </div>
     }
-
   </div>
 </main>

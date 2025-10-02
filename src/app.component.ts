@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, WritableSignal, effect, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, WritableSignal, effect, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 type GameState = 'start' | 'showing' | 'playing' | 'gameover';
@@ -25,6 +25,14 @@ interface DailyTask {
   completed: boolean;
 }
 
+// --- Farcaster MiniApp Types ---
+interface FarcasterUser {
+  fid: number;
+  username: string;
+  displayName: string;
+  pfpUrl: string;
+}
+
 
 @Component({
   selector: 'app-root',
@@ -33,7 +41,7 @@ interface DailyTask {
   standalone: true,
   imports: [CommonModule],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   GRID_SIZE = 9;
 
   // Game State Signals
@@ -55,6 +63,9 @@ export class AppComponent {
   dailyTask = signal<DailyTask | null>(null);
   consecutiveLevels = signal(0);
   taskJustCompleted = signal(false);
+
+  // Farcaster User
+  farcasterUser = signal<FarcasterUser | null>(null);
   
   private audioContext: AudioContext | null = null;
   
@@ -99,6 +110,28 @@ export class AppComponent {
     effect(() => {
       this.saveSettings();
     });
+  }
+
+  ngOnInit(): void {
+    this.initializeMiniAppSDK();
+  }
+
+  private async initializeMiniAppSDK() {
+    // The MiniApp SDK is loaded from a script tag in index.html
+    const MiniApp = (window as any).MiniApp;
+    if (typeof MiniApp !== 'undefined') {
+      try {
+        // Signal to the Farcaster client that the MiniApp is ready.
+        MiniApp.ready();
+        
+        const userData = await MiniApp.getUserData();
+        if (userData) {
+          this.farcasterUser.set(userData);
+        }
+      } catch (error) {
+        console.error('Failed to initialize MiniApp SDK or get user data:', error);
+      }
+    }
   }
 
   loadSettings() {

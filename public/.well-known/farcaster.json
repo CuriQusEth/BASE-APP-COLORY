@@ -1,0 +1,34 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjUwMzg5MiwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDQ1YWZDNWQ1MzA4ZTM0ODJCMEU4ZEVBNTRGM2JjMTRCNTkxQzgzQzkifQ",
+    "payload": "eyJkb21haW4iOiJuZXctbWluaS1hcHAtcXVpY2tzdGFydC1zd2FydC1ldGEudmVyY2VsLmFwcCJ9",
+    "signature": "MHg3YjU1NTJmN2FjN2YxOTlmZjFkZGZhZGJhZjNiNmRjZjgwYWRkNjVmNDQ0ZWNiMmU4MGYwY2M3ZTU5M2U5NjAyNThmYWU5OGFiMTI0MjQ1ZTM4MTFlZTIxZDI2YmNjZDg2MWY0OGEzODkzMzc4NzEzMDhmNzkwNjk5ODg0OTA0MjFj"
+  },
+  "baseBuilder": {
+    "allowedAddresses": ["0x29536D0bc1004ab274c4F0F59734Ad74D4559b7B"]
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Color Memory",
+    "homeUrl": "./",
+    "iconUrl": "https://picsum.photos/seed/colormemory-icon/128/128",
+    "splashImageUrl": "https://picsum.photos/seed/colormemory-splash/600/800",
+    "splashBackgroundColor": "#0f172a",
+    "webhookUrl": "",
+    "subtitle": "Memorize the sequence. Repeat it back.",
+    "description": "A simple yet engaging memory game where players memorize and replicate a sequence of colored tiles. Inspired by Turkish motifs and a minimalist, vibrant aesthetic.",
+    "screenshotUrls": [
+      "https://picsum.photos/seed/colormemory-s1/400/800",
+      "https://picsum.photos/seed/colormemory-s2/400/800",
+      "https://picsum.photos/seed/colormemory-s3/400/800"
+    ],
+    "primaryCategory": "game",
+    "tags": ["memory", "game", "colors"],
+    "heroImageUrl": "https://picsum.photos/seed/colormemory-og/800/418",
+    "tagline": "Test your memory",
+    "ogTitle": "Color Memory",
+    "ogDescription": "A simple yet engaging memory game where players memorize and replicate a sequence of colored tiles.",
+    "ogImageUrl": "https://picsum.photos/seed/colormemory-og/800/418",
+    "noindex": true
+  }
+}
