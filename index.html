@@ -18,6 +18,14 @@
     .shake-anim {
       animation: shake 0.5s ease-in-out;
     }
+    body {
+      /* Prevent text selection on buttons */
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none; /* IE 10 and IE 11 */
+      user-select: none; /* Standard syntax */
+      /* Prevent double-tap to zoom */
+      touch-action: manipulation;
+    }
   </style>
 <script type="importmap">
 {
