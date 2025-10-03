@@ -1,150 +1,158 @@
 <main class="min-h-screen w-full flex flex-col items-center justify-center p-4 text-white font-sans">
   <div class="w-full max-w-md mx-auto relative">
 
-    <header class="text-center mb-6">
-      <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-wider text-cyan-400">Color Memory</h1>
-      @if(farcasterUser(); as user) {
-        <p class="text-gray-400 mt-2">Welcome back, {{ user.displayName }}!</p>
-      } @else {
-        <p class="text-gray-400 mt-2">Memorize the sequence. Repeat it back.</p>
-      }
-    </header>
-
-    <div class="flex justify-between items-center mb-4 px-2 sm:px-4 py-3 bg-gray-800/50 rounded-lg">
-      @if (gameMode() === 'classic') {
-        <div class="text-center px-1">
-          <span class="text-xs sm:text-sm uppercase text-gray-400 tracking-widest">Score</span>
-          <span class="block text-xl sm:text-2xl font-bold text-white">{{ score() }}</span>
-        </div>
-        <div class="text-center px-1">
-          <span class="text-xs sm:text-sm uppercase text-gray-400 tracking-widest">Level</span>
-          <span class="block text-xl sm:text-2xl font-bold text-white">{{ level() }}</span>
-        </div>
-        <div class="text-center px-1">
-          <span class="text-xs sm:text-sm uppercase text-gray-400 tracking-widest">High Score</span>
-          <span class="block text-xl sm:text-2xl font-bold text-white">{{ highScore() }}</span>
-        </div>
-      } @else {
-        <div class="text-center px-1 grow">
-          <span class="text-xs sm:text-sm uppercase text-gray-400 tracking-widest">Sequence</span>
-          <span class="block text-xl sm:text-2xl font-bold text-white">{{ level() }}</span>
-        </div>
-        <div class="text-center px-1 grow">
-          <span class="text-xs sm:text-sm uppercase text-gray-400 tracking-widest">Best</span>
-          <span class="block text-xl sm:text-2xl font-bold text-white">{{ bestZenSequence() }}</span>
-        </div>
-      }
-      <button (click)="toggleMute()" title="Toggle Sound" class="p-2 sm:p-3 rounded-full hover:bg-gray-700 transition-colors">
-        @if (isMuted()) {
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l-4-4m0 4l4-4" />
-          </svg>
-        } @else {
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-          </svg>
-        }
-      </button>
-    </div>
-
-    @if (gameState() !== 'start' && gameState() !== 'gameover') {
-      <div 
-        [class.shake-anim]="isShaking()"
-        class="grid grid-cols-3 gap-2 sm:gap-3 aspect-square transition-opacity duration-300"
-        [class.opacity-50]="gameState() === 'showing'">
-        @for (color of tileColors(); track $index) {
-          <button
-            (click)="handleTileClick($index)"
-            [disabled]="gameState() !== 'playing'"
-            class="rounded-lg shadow-md transition-all duration-150 ease-in-out"
-            [class]="color"
-            [class.scale-110]="activeTile() === $index"
-            [class.shadow-lg]="activeTile() === $index"
-            [class.shadow-white/50]="activeTile() === $index"
-            [class.opacity-40]="activeTile() !== $index"
-            [class.cursor-pointer]="gameState() === 'playing'"
-            [class.cursor-not-allowed]="gameState() !== 'playing'"
-            [class.hover:opacity-80]="gameState() === 'playing'">
-          </button>
-        }
+    @if(gameState() === 'loading') {
+      <div class="flex flex-col items-center justify-center aspect-square">
+        <div class="w-16 h-16 border-4 border-cyan-400 border-dashed rounded-full animate-spin mb-6"></div>
+        <h1 class="text-4xl font-bold tracking-wider text-cyan-400">Color Memory</h1>
+        <p class="text-gray-400 mt-2">Connecting to Farcaster...</p>
       </div>
-      @if(gameState() === 'showing') {
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p class="text-lg sm:text-xl font-bold text-white/80 bg-black/50 px-4 py-2 rounded-lg">Watch closely...</p>
-        </div>
-      }
-    }
+    } @else {
+      <header class="text-center mb-6">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-wider text-cyan-400">Color Memory</h1>
+        @if(farcasterUser(); as user) {
+          <p class="text-gray-400 mt-2">Welcome back, {{ user.displayName }}!</p>
+        } @else {
+          <p class="text-gray-400 mt-2">Memorize the sequence. Repeat it back.</p>
+        }
+      </header>
 
-    @if (gameState() === 'start' || gameState() === 'gameover') {
-      <div class="absolute inset-0 bg-gray-900/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg z-10 p-4 sm:p-6 space-y-3 sm:space-y-4">
-        @if (gameState() === 'gameover') {
-          <div class="text-center">
-            <h2 class="text-3xl sm:text-4xl font-bold text-red-500 mb-2">Game Over</h2>
-            @if(taskJustCompleted()) {
-               <p class="text-md sm:text-lg text-green-400 font-semibold animate-pulse">Task Complete! +500 bonus score!</p>
-            }
-            <p class="text-lg sm:text-xl text-gray-300">Your final score: {{ score() }}</p>
+      <div class="flex justify-between items-center mb-4 px-2 sm:px-4 py-3 bg-gray-800/50 rounded-lg">
+        @if (gameMode() === 'classic') {
+          <div class="text-center px-1">
+            <span class="text-xs sm:text-sm uppercase text-gray-400 tracking-widest">Score</span>
+            <span class="block text-xl sm:text-2xl font-bold text-white">{{ score() }}</span>
+          </div>
+          <div class="text-center px-1">
+            <span class="text-xs sm:text-sm uppercase text-gray-400 tracking-widest">Level</span>
+            <span class="block text-xl sm:text-2xl font-bold text-white">{{ level() }}</span>
+          </div>
+          <div class="text-center px-1">
+            <span class="text-xs sm:text-sm uppercase text-gray-400 tracking-widest">High Score</span>
+            <span class="block text-xl sm:text-2xl font-bold text-white">{{ highScore() }}</span>
           </div>
         } @else {
-          <h2 class="text-3xl sm:text-4xl font-bold text-cyan-400">Welcome!</h2>
+          <div class="text-center px-1 grow">
+            <span class="text-xs sm:text-sm uppercase text-gray-400 tracking-widest">Sequence</span>
+            <span class="block text-xl sm:text-2xl font-bold text-white">{{ level() }}</span>
+          </div>
+          <div class="text-center px-1 grow">
+            <span class="text-xs sm:text-sm uppercase text-gray-400 tracking-widest">Best</span>
+            <span class="block text-xl sm:text-2xl font-bold text-white">{{ bestZenSequence() }}</span>
+          </div>
         }
-
-        <div class="w-full max-w-xs space-y-4">
-          <!-- Daily Task -->
-          @if(dailyTask(); as task) {
-            <div class="bg-gray-800/70 p-3 rounded-lg">
-              <h3 class="text-sm font-bold uppercase text-gray-400 tracking-widest mb-2 text-center">Daily Task</h3>
-              <p class="text-center text-cyan-300 text-sm mb-2">{{ task.description }}</p>
-              @if(task.completed) {
-                <div class="flex items-center justify-center gap-2 text-green-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                  </svg>
-                  <span>Completed!</span>
-                </div>
-              } @else {
-                <div class="w-full bg-gray-700 rounded-full h-2.5">
-                  <div class="bg-cyan-500 h-2.5 rounded-full" [style.width.%]="(task.progress / task.target) * 100"></div>
-                </div>
-                <p class="text-center text-xs text-gray-400 mt-1">{{ task.progress }} / {{ task.target }}</p>
-              }
-            </div>
+        <button (click)="toggleMute()" title="Toggle Sound" class="p-2 sm:p-3 rounded-full hover:bg-gray-700 transition-colors">
+          @if (isMuted()) {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l-4-4m0 4l4-4" />
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
           }
-          
-          <button (click)="startGame()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-bold py-3 px-4 rounded-lg text-lg sm:text-xl transition-transform transform hover:scale-105">
-            {{ gameState() === 'gameover' ? 'Play Again' : 'Start Game' }}
-          </button>
+        </button>
+      </div>
 
-          <!-- Settings -->
-          <div class="pt-2 sm:pt-4 space-y-4">
-            <div class="flex justify-center items-center gap-2 sm:gap-4">
-              <h3 class="text-md sm:text-lg font-semibold text-gray-300">Mode:</h3>
-              <div class="flex gap-2">
-                <button (click)="setGameMode('classic')" class="px-3 py-2 text-sm sm:text-base rounded-md transition-colors" [class.bg-cyan-500]="gameMode() === 'classic'" [class.text-gray-900]="gameMode() === 'classic'" [class.bg-gray-700]="gameMode() !== 'classic'">Classic</button>
-                <button (click)="setGameMode('zen')" class="px-3 py-2 text-sm sm:text-base rounded-md transition-colors" [class.bg-cyan-500]="gameMode() === 'zen'" [class.text-gray-900]="gameMode() === 'zen'" [class.bg-gray-700]="gameMode() !== 'zen'">Zen</button>
-              </div>
+      @if (gameState() !== 'start' && gameState() !== 'gameover') {
+        <div 
+          [class.shake-anim]="isShaking()"
+          class="grid grid-cols-3 gap-2 sm:gap-3 aspect-square transition-opacity duration-300"
+          [class.opacity-50]="gameState() === 'showing'">
+          @for (color of tileColors(); track $index) {
+            <button
+              (click)="handleTileClick($index)"
+              [disabled]="gameState() !== 'playing'"
+              class="rounded-lg shadow-md transition-all duration-150 ease-in-out"
+              [class]="color"
+              [class.scale-110]="activeTile() === $index"
+              [class.shadow-lg]="activeTile() === $index"
+              [class.shadow-white/50]="activeTile() === $index"
+              [class.opacity-40]="activeTile() !== $index"
+              [class.cursor-pointer]="gameState() === 'playing'"
+              [class.cursor-not-allowed]="gameState() !== 'playing'"
+              [class.hover:opacity-80]="gameState() === 'playing'">
+            </button>
+          }
+        </div>
+        @if(gameState() === 'showing') {
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <p class="text-lg sm:text-xl font-bold text-white/80 bg-black/50 px-4 py-2 rounded-lg">Watch closely...</p>
+          </div>
+        }
+      }
+
+      @if (gameState() === 'start' || gameState() === 'gameover') {
+        <div class="absolute inset-0 bg-gray-900/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg z-10 p-4 sm:p-6 space-y-3 sm:space-y-4">
+          @if (gameState() === 'gameover') {
+            <div class="text-center">
+              <h2 class="text-3xl sm:text-4xl font-bold text-red-500 mb-2">Game Over</h2>
+              @if(taskJustCompleted()) {
+                 <p class="text-md sm:text-lg text-green-400 font-semibold animate-pulse">Task Complete! +500 bonus score!</p>
+              }
+              <p class="text-lg sm:text-xl text-gray-300">Your final score: {{ score() }}</p>
             </div>
+          } @else {
+            <h2 class="text-3xl sm:text-4xl font-bold text-cyan-400">Welcome!</h2>
+          }
+
+          <div class="w-full max-w-xs space-y-4">
+            <!-- Daily Task -->
+            @if(dailyTask(); as task) {
+              <div class="bg-gray-800/70 p-3 rounded-lg">
+                <h3 class="text-sm font-bold uppercase text-gray-400 tracking-widest mb-2 text-center">Daily Task</h3>
+                <p class="text-center text-cyan-300 text-sm mb-2">{{ task.description }}</p>
+                @if(task.completed) {
+                  <div class="flex items-center justify-center gap-2 text-green-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Completed!</span>
+                  </div>
+                } @else {
+                  <div class="w-full bg-gray-700 rounded-full h-2.5">
+                    <div class="bg-cyan-500 h-2.5 rounded-full" [style.width.%]="(task.progress / task.target) * 100"></div>
+                  </div>
+                  <p class="text-center text-xs text-gray-400 mt-1">{{ task.progress }} / {{ task.target }}</p>
+                }
+              </div>
+            }
             
-            <div class="flex justify-center items-center gap-2 sm:gap-4">
-              <h3 class="text-md sm:text-lg font-semibold text-gray-300">Difficulty:</h3>
-              <div class="flex gap-2">
-                <button (click)="setDifficulty('easy')" class="px-3 py-2 text-sm sm:text-base rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'easy'" [class.text-gray-900]="difficulty() === 'easy'" [class.bg-gray-700]="difficulty() !== 'easy'">Easy</button>
-                <button (click)="setDifficulty('medium')" class="px-3 py-2 text-sm sm:text-base rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'medium'" [class.text-gray-900]="difficulty() === 'medium'" [class.bg-gray-700]="difficulty() !== 'medium'">Medium</button>
-                <button (click)="setDifficulty('hard')" class="px-3 py-2 text-sm sm:text-base rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'hard'" [class.text-gray-900]="difficulty() === 'hard'" [class.bg-gray-700]="difficulty() !== 'hard'">Hard</button>
-              </div>
-            </div>
+            <button (click)="startGame()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-bold py-3 px-4 rounded-lg text-lg sm:text-xl transition-transform transform hover:scale-105">
+              {{ gameState() === 'gameover' ? 'Play Again' : 'Start Game' }}
+            </button>
 
-            <div class="flex justify-center items-center gap-2 sm:gap-4">
-              <h3 class="text-md sm:text-lg font-semibold text-gray-300">Palette:</h3>
-              <div class="flex items-center gap-2">
-                <button (click)="changePalette(-1)" class="px-3 py-2 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors">&lt;</button>
-                <span class="text-sm sm:text-base w-32 sm:w-36 text-center">{{ currentPaletteName() }}</span>
-                <button (click)="changePalette(1)" class="px-3 py-2 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors">&gt;</button>
+            <!-- Settings -->
+            <div class="pt-2 sm:pt-4 space-y-4">
+              <div class="flex justify-center items-center gap-2 sm:gap-4">
+                <h3 class="text-md sm:text-lg font-semibold text-gray-300">Mode:</h3>
+                <div class="flex gap-2">
+                  <button (click)="setGameMode('classic')" class="px-3 py-2 text-sm sm:text-base rounded-md transition-colors" [class.bg-cyan-500]="gameMode() === 'classic'" [class.text-gray-900]="gameMode() === 'classic'" [class.bg-gray-700]="gameMode() !== 'classic'">Classic</button>
+                  <button (click)="setGameMode('zen')" class="px-3 py-2 text-sm sm:text-base rounded-md transition-colors" [class.bg-cyan-500]="gameMode() === 'zen'" [class.text-gray-900]="gameMode() === 'zen'" [class.bg-gray-700]="gameMode() !== 'zen'">Zen</button>
+                </div>
+              </div>
+              
+              <div class="flex justify-center items-center gap-2 sm:gap-4">
+                <h3 class="text-md sm:text-lg font-semibold text-gray-300">Difficulty:</h3>
+                <div class="flex gap-2">
+                  <button (click)="setDifficulty('easy')" class="px-3 py-2 text-sm sm:text-base rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'easy'" [class.text-gray-900]="difficulty() === 'easy'" [class.bg-gray-700]="difficulty() !== 'easy'">Easy</button>
+                  <button (click)="setDifficulty('medium')" class="px-3 py-2 text-sm sm:text-base rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'medium'" [class.text-gray-900]="difficulty() === 'medium'" [class.bg-gray-700]="difficulty() !== 'medium'">Medium</button>
+                  <button (click)="setDifficulty('hard')" class="px-3 py-2 text-sm sm:text-base rounded-md transition-colors" [class.bg-cyan-500]="difficulty() === 'hard'" [class.text-gray-900]="difficulty() === 'hard'" [class.bg-gray-700]="difficulty() !== 'hard'">Hard</button>
+                </div>
+              </div>
+
+              <div class="flex justify-center items-center gap-2 sm:gap-4">
+                <h3 class="text-md sm:text-lg font-semibold text-gray-300">Palette:</h3>
+                <div class="flex items-center gap-2">
+                  <button (click)="changePalette(-1)" class="px-3 py-2 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors">&lt;</button>
+                  <span class="text-sm sm:text-base w-32 sm:w-36 text-center">{{ currentPaletteName() }}</span>
+                  <button (click)="changePalette(1)" class="px-3 py-2 rounded-md bg-gray-700 hover:bg-gray-600 transition-colors">&gt;</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      }
     }
   </div>
 </main>

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal, WritableSignal, effect, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-type GameState = 'start' | 'showing' | 'playing' | 'gameover';
+type GameState = 'loading' | 'start' | 'showing' | 'playing' | 'gameover';
 type Difficulty = 'easy' | 'medium' | 'hard';
 type GameMode = 'classic' | 'zen';
 
@@ -46,7 +46,7 @@ export class AppComponent implements OnInit {
   GRID_SIZE = 9;
 
   // Game State Signals
-  gameState: WritableSignal<GameState> = signal('start');
+  gameState: WritableSignal<GameState> = signal('loading');
   sequence = signal<number[]>([]);
   playerSequence = signal<number[]>([]);
   level = signal(0);
@@ -124,6 +124,8 @@ export class AppComponent implements OnInit {
     const MiniApp = (window as any).MiniApp;
     if (typeof MiniApp !== 'undefined') {
       try {
+        // Small delay so loading screen is visible
+        await this.delay(750);
         // Signal to the Farcaster client that the MiniApp is ready.
         MiniApp.ready();
         
@@ -133,7 +135,13 @@ export class AppComponent implements OnInit {
         }
       } catch (error) {
         console.error('Failed to initialize MiniApp SDK or get user data:', error);
+      } finally {
+        this.gameState.set('start');
       }
+    } else {
+      // If not in a Farcaster client, just start the game after a short delay
+      await this.delay(750);
+      this.gameState.set('start');
     }
   }
 
