@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 type GameState = 'start' | 'showing' | 'playing' | 'gameover';
 type Difficulty = 'easy' | 'medium' | 'hard';
+type GameMode = 'classic' | 'zen';
 
 // --- Daily Task Types ---
 interface GameStats {
@@ -55,9 +56,11 @@ export class AppComponent implements OnInit {
   isShaking = signal(false);
 
   // Settings Signals
+  gameMode = signal<GameMode>('classic');
   difficulty = signal<Difficulty>('medium');
   selectedPaletteIndex = signal<number>(0);
   isMuted = signal<boolean>(false);
+  bestZenSequence = signal(0);
   
   // Daily Task Signals
   dailyTask = signal<DailyTask | null>(null);
@@ -142,6 +145,9 @@ export class AppComponent implements OnInit {
     if (savedPalette) this.selectedPaletteIndex.set(Number(savedPalette));
     const savedMute = localStorage.getItem('colorMemoryMuted');
     this.isMuted.set(savedMute === 'true');
+    const savedMode = localStorage.getItem('colorMemoryGameMode') as GameMode;
+    if (savedMode) this.gameMode.set(savedMode);
+    this.bestZenSequence.set(Number(localStorage.getItem('colorMemoryBestZen') || 0));
   }
 
   saveSettings() {
@@ -149,6 +155,8 @@ export class AppComponent implements OnInit {
     localStorage.setItem('colorMemoryDifficulty', this.difficulty());
     localStorage.setItem('colorMemoryPalette', this.selectedPaletteIndex().toString());
     localStorage.setItem('colorMemoryMuted', this.isMuted().toString());
+    localStorage.setItem('colorMemoryGameMode', this.gameMode());
+    localStorage.setItem('colorMemoryBestZen', this.bestZenSequence().toString());
     const task = this.dailyTask();
     if (task) {
       localStorage.setItem('colorMemoryDailyTask', JSON.stringify(task));
@@ -188,6 +196,8 @@ export class AppComponent implements OnInit {
   }
 
   updateTaskProgress() {
+    if (this.gameMode() === 'zen') return; // Tasks are for classic mode only
+
     const task = this.dailyTask();
     if (!task || task.completed) return;
 
@@ -248,6 +258,11 @@ export class AppComponent implements OnInit {
     setTimeout(() => this.playNote(659.25, 100), 120); // E5
     setTimeout(() => this.playNote(783.99, 100), 240); // G5
   }
+  
+  private playMistakeSound() {
+    this.initializeAudio();
+    this.playNote(130.81, 200); // C3
+  }
 
   private playGameOverSound() {
     this.initializeAudio();
@@ -260,15 +275,24 @@ export class AppComponent implements OnInit {
     this.sequence.set([]);
     this.playerSequence.set([]);
     this.level.set(0);
-    this.score.set(0);
-    this.consecutiveLevels.set(0);
     this.taskJustCompleted.set(false);
+    
+    if (this.gameMode() === 'classic') {
+      this.score.set(0);
+      this.consecutiveLevels.set(0);
+    }
+    
     this.gameState.set('showing');
     setTimeout(() => this.nextLevel(), 500);
   }
 
   nextLevel() {
     this.level.update(l => l + 1);
+    
+    if (this.gameMode() === 'zen' && this.level() > this.bestZenSequence()) {
+      this.bestZenSequence.set(this.level() -1); // Best is completed levels
+    }
+
     this.playerSequence.set([]);
     const newTile = Math.floor(Math.random() * this.GRID_SIZE);
     this.sequence.update(s => [...s, newTile]);
@@ -301,21 +325,40 @@ export class AppComponent implements OnInit {
     const currentPlayerSequence = this.playerSequence();
 
     if (currentSequence[currentPlayerSequence.length - 1] !== index) {
-      this.playGameOverSound();
-      this.gameOver();
+      if (this.gameMode() === 'zen') {
+        this.handleZenMistake();
+      } else {
+        this.playGameOverSound();
+        this.gameOver();
+      }
       return;
     }
 
     this.playTileSound(index);
 
     if (currentPlayerSequence.length === currentSequence.length) {
-      this.score.update(s => s + (this.level() * 10));
-      this.consecutiveLevels.update(c => c + 1);
-      this.updateTaskProgress();
+      if (this.gameMode() === 'classic') {
+        this.score.update(s => s + (this.level() * 10));
+        this.consecutiveLevels.update(c => c + 1);
+        this.updateTaskProgress();
+      } else { // Zen Mode success
+        if (this.level() > this.bestZenSequence()) {
+          this.bestZenSequence.set(this.level());
+        }
+      }
+      
       this.gameState.set('showing');
       setTimeout(() => this.playCorrectSound(), 200);
       setTimeout(() => this.nextLevel(), 1000);
     }
+  }
+  
+  private handleZenMistake() {
+    this.playMistakeSound();
+    this.triggerShake();
+    this.playerSequence.set([]);
+    this.gameState.set('showing');
+    setTimeout(() => this.showSequence(), 500);
   }
 
   gameOver() {
@@ -340,6 +383,10 @@ export class AppComponent implements OnInit {
   // --- UI Methods ---
   setDifficulty(level: Difficulty) {
     this.difficulty.set(level);
+  }
+  
+  setGameMode(mode: GameMode) {
+    this.gameMode.set(mode);
   }
 
   changePalette(direction: 1 | -1) {
