@@ -57,7 +57,7 @@
       @if (gameState() !== 'start' && gameState() !== 'gameover') {
         <div 
           [class.shake-anim]="isShaking()"
-          class="grid grid-cols-3 gap-2 sm:gap-3 aspect-square transition-opacity duration-300"
+          class="grid grid-cols-3 gap-2 sm:gap-3 aspect-square transition-opacity duration-300 relative"
           [class.opacity-50]="gameState() === 'showing'">
           @for (color of tileColors(); track $index) {
             <button
@@ -74,12 +74,19 @@
               [class.hover:opacity-80]="gameState() === 'playing'">
             </button>
           }
+
+          @if(gameState() === 'showing') {
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <p class="text-lg sm:text-xl font-bold text-white/80 bg-black/50 px-4 py-2 rounded-lg">Watch closely...</p>
+            </div>
+          }
+
+          @if(taskCompletionMessage(); as message) {
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                <p class="text-lg sm:text-xl font-bold text-green-400 bg-black/70 px-6 py-3 rounded-lg animate-pulse">{{ message }}</p>
+            </div>
+          }
         </div>
-        @if(gameState() === 'showing') {
-          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <p class="text-lg sm:text-xl font-bold text-white/80 bg-black/50 px-4 py-2 rounded-lg">Watch closely...</p>
-          </div>
-        }
       }
 
       @if (gameState() === 'start' || gameState() === 'gameover') {

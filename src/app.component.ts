@@ -9,6 +9,7 @@ type GameMode = 'classic' | 'zen';
 interface GameStats {
   score: number;
   consecutiveLevels: number;
+  zenSequenceLength: number;
 }
 
 interface TaskDefinition {
@@ -66,6 +67,7 @@ export class AppComponent implements OnInit {
   dailyTask = signal<DailyTask | null>(null);
   consecutiveLevels = signal(0);
   taskJustCompleted = signal(false);
+  taskCompletionMessage = signal<string | null>(null);
 
   // Farcaster User
   farcasterUser = signal<FarcasterUser | null>(null);
@@ -98,7 +100,13 @@ export class AppComponent implements OnInit {
       description: target => `Complete ${target} levels in a row`,
       target: () => 3 + Math.floor(Math.random() * 3), // 3 to 5
       progressTracker: stats => stats.consecutiveLevels
-    }
+    },
+    {
+      id: 'zen_sequence_length',
+      description: target => `Reach a sequence of ${target} in Zen Mode`,
+      target: () => 10 + Math.floor(Math.random() * 6), // 10 to 15
+      progressTracker: stats => stats.zenSequenceLength,
+    },
   ];
 
   // Computed Signals
@@ -124,25 +132,24 @@ export class AppComponent implements OnInit {
     const sdk = (window as any).farcaster?.sdk;
     if (sdk) {
       try {
-        // Small delay so loading screen is visible
-        await this.delay(750);
-        
+        // Signal readiness to the Farcaster client immediately.
+        // This hides the splash screen and shows the app.
+        await sdk.actions.ready();
+
+        // After the app is visible, fetch user data to personalize the experience.
         const userData = await sdk.getUserData();
         if (userData) {
           this.farcasterUser.set(userData);
         }
-        
-        // Signal to the Farcaster client that the MiniApp is ready.
-        await sdk.actions.ready();
-
       } catch (error) {
         console.error('Failed to initialize MiniApp SDK or get user data:', error);
       } finally {
+        // Now that the app is visible and data is fetched (or failed), show the start screen.
         this.gameState.set('start');
       }
     } else {
-      // If not in a Farcaster client, just start the game after a short delay
-      await this.delay(750);
+      // If not in a Farcaster client, just start the game after a short delay.
+      await this.delay(250);
       this.gameState.set('start');
     }
   }
@@ -206,17 +213,21 @@ export class AppComponent implements OnInit {
   }
 
   updateTaskProgress() {
-    if (this.gameMode() === 'zen') return; // Tasks are for classic mode only
-
     const task = this.dailyTask();
     if (!task || task.completed) return;
 
     const taskDefinition = this.taskDefinitions.find(t => t.id === task.id);
     if (!taskDefinition) return;
 
+    // Prevent updating tasks for the wrong game mode
+    const currentMode = this.gameMode();
+    if (currentMode === 'zen' && task.id !== 'zen_sequence_length') return;
+    if (currentMode === 'classic' && task.id === 'zen_sequence_length') return;
+
     const gameStats: GameStats = {
       score: this.score(),
       consecutiveLevels: this.consecutiveLevels(),
+      zenSequenceLength: this.level(),
     };
     
     const newProgress = taskDefinition.progressTracker(gameStats);
@@ -228,11 +239,22 @@ export class AppComponent implements OnInit {
       if (task.progress >= task.target && !task.completed) {
         task.completed = true;
         this.taskJustCompleted.set(true);
-        this.score.update(s => s + 500); // Award bonus
+        if (this.gameMode() === 'classic') {
+          this.score.update(s => s + 500); // Award bonus
+        } else {
+          this.showTaskCompletionMessage('Task Complete!');
+        }
       }
 
       this.dailyTask.set({ ...task });
     }
+  }
+
+  private showTaskCompletionMessage(message: string) {
+    this.taskCompletionMessage.set(message);
+    setTimeout(() => {
+        this.taskCompletionMessage.set(null);
+    }, 3000); // Show message for 3 seconds
   }
 
   // --- Audio Methods ---
@@ -355,6 +377,7 @@ export class AppComponent implements OnInit {
         if (this.level() > this.bestZenSequence()) {
           this.bestZenSequence.set(this.level());
         }
+        this.updateTaskProgress();
       }
       
       this.gameState.set('showing');
