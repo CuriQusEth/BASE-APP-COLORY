@@ -121,18 +121,20 @@ export class AppComponent implements OnInit {
 
   private async initializeMiniAppSDK() {
     // The MiniApp SDK is loaded from a script tag in index.html
-    const MiniApp = (window as any).MiniApp;
-    if (typeof MiniApp !== 'undefined') {
+    const sdk = (window as any).farcaster?.sdk;
+    if (sdk) {
       try {
         // Small delay so loading screen is visible
         await this.delay(750);
-        // Signal to the Farcaster client that the MiniApp is ready.
-        MiniApp.ready();
         
-        const userData = await MiniApp.getUserData();
+        const userData = await sdk.getUserData();
         if (userData) {
           this.farcasterUser.set(userData);
         }
+        
+        // Signal to the Farcaster client that the MiniApp is ready.
+        sdk.actions.ready();
+
       } catch (error) {
         console.error('Failed to initialize MiniApp SDK or get user data:', error);
       } finally {
