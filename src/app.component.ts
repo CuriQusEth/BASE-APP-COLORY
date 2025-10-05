@@ -133,7 +133,7 @@ export class AppComponent implements OnInit {
         }
         
         // Signal to the Farcaster client that the MiniApp is ready.
-        sdk.actions.ready();
+        await sdk.actions.ready();
 
       } catch (error) {
         console.error('Failed to initialize MiniApp SDK or get user data:', error);
