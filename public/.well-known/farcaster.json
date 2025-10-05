@@ -9,26 +9,24 @@
   },
   "miniapp": {
     "version": "1",
-    "name": "Color Memory",
-    "homeUrl": "./",
-    "iconUrl": "https://picsum.photos/seed/colormemory-icon/128/128",
-    "splashImageUrl": "https://picsum.photos/seed/colormemory-splash/600/800",
-    "splashBackgroundColor": "#0f172a",
+    "name": "Renk Belleği",
+    "homeUrl": "https://base-app-colory.vercel.app/",
+    "iconUrl": "https://i.imgur.com/KqH0s2C.png",
+    "splashImageUrl": "https://i.imgur.com/KqH0s2C.png",
+    "splashBackgroundColor": "#000000",
     "webhookUrl": "",
-    "subtitle": "Memorize the sequence. Repeat it back.",
-    "description": "A simple yet engaging memory game where players memorize and replicate a sequence of colored tiles. Inspired by Turkish motifs and a minimalist, vibrant aesthetic.",
+    "subtitle": "RENKLİ",
+    "description": "Color Memory, hafızayı ve odaklanmayı geliştirmek için tasarlanmış basit ve eğlenceli bir oyundur. Oyunda, oyunculara hatırlamaları ve doğru sırayla tekrarlamaları gereken bir renk dizisi gösterilir. Seviyeler ilerledikçe, diziler daha uzun ve daha zorlu hale gelir. Bu oyun sadece eğlendirmekle kalmaz, aynı zamanda kısa süreli hafızayı, dikkat ve konsantrasyon becerilerini güçlendirmeye de yardımcı olur. Eğlenirken beyinlerini çalıştırmak isteyen hem çocuklar hem de yetişkinler için uygundur.",
     "screenshotUrls": [
-      "https://picsum.photos/seed/colormemory-s1/400/800",
-      "https://picsum.photos/seed/colormemory-s2/400/800",
-      "https://picsum.photos/seed/colormemory-s3/400/800"
+      "https://i.imgur.com/KqH0s2C.png"
     ],
-    "primaryCategory": "game",
+    "primaryCategory": "games",
     "tags": ["memory", "game", "colors"],
-    "heroImageUrl": "https://picsum.photos/seed/colormemory-og/800/418",
+    "heroImageUrl": "https://i.imgur.com/KqH0s2C.png",
     "tagline": "Test your memory",
-    "ogTitle": "Color Memory",
-    "ogDescription": "A simple yet engaging memory game where players memorize and replicate a sequence of colored tiles.",
-    "ogImageUrl": "https://picsum.photos/seed/colormemory-og/800/418",
+    "ogTitle": "Renk Belleği",
+    "ogDescription": "Color Memory, hafızayı ve odaklanmayı geliştirmek için tasarlanmış basit ve eğlenceli bir oyundur.",
+    "ogImageUrl": "https://i.imgur.com/KqH0s2C.png",
     "noindex": true
   }
 }
