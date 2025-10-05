@@ -27,6 +27,10 @@ interface DailyTask {
   completed: boolean;
 }
 
+interface ArchivedTask extends DailyTask {
+  date: string;
+}
+
 // --- Farcaster MiniApp Types ---
 interface FarcasterUser {
   fid: number;
@@ -68,6 +72,9 @@ export class AppComponent implements OnInit {
   consecutiveLevels = signal(0);
   taskJustCompleted = signal(false);
   taskCompletionMessage = signal<string | null>(null);
+  taskHistory = signal<ArchivedTask[]>([]);
+  showTaskHistory = signal(false);
+
 
   // Farcaster User
   farcasterUser = signal<FarcasterUser | null>(null);
@@ -92,19 +99,19 @@ export class AppComponent implements OnInit {
     {
       id: 'score_single_game',
       description: target => `Score ${target} points in a single game`,
-      target: () => (5 + Math.floor(Math.random() * 6)) * 100, // 500 to 1000
+      target: () => (4 + Math.floor(Math.random() * 9)) * 100, // 400 to 1200
       progressTracker: stats => stats.score
     },
     {
       id: 'consecutive_levels',
       description: target => `Complete ${target} levels in a row`,
-      target: () => 3 + Math.floor(Math.random() * 3), // 3 to 5
+      target: () => 3 + Math.floor(Math.random() * 5), // 3 to 7
       progressTracker: stats => stats.consecutiveLevels
     },
     {
       id: 'zen_sequence_length',
       description: target => `Reach a sequence of ${target} in Zen Mode`,
-      target: () => 10 + Math.floor(Math.random() * 6), // 10 to 15
+      target: () => 8 + Math.floor(Math.random() * 8), // 8 to 15
       progressTracker: stats => stats.zenSequenceLength,
     },
   ];
@@ -113,6 +120,7 @@ export class AppComponent implements OnInit {
   currentDifficultySettings = computed(() => this.difficultySettings[this.difficulty()]);
   tileColors = computed(() => this.palettes[this.selectedPaletteIndex()].colors);
   currentPaletteName = computed(() => this.palettes[this.selectedPaletteIndex()].name);
+  reversedTaskHistory = computed(() => [...this.taskHistory()].reverse());
 
   constructor() {
     this.loadSettings();
@@ -133,18 +141,24 @@ export class AppComponent implements OnInit {
     if (sdk) {
       try {
         // Signal readiness to the Farcaster client immediately.
-        // This hides the splash screen and shows the app.
+        // This hides its splash screen and shows our app.
         await sdk.actions.ready();
+        
+        // Immediately transition to the start screen so the app is usable.
+        this.gameState.set('start');
 
-        // After the app is visible, fetch user data to personalize the experience.
-        const userData = await sdk.getUserData();
-        if (userData) {
-          this.farcasterUser.set(userData);
-        }
+        // Fetch user data in the background to not block the UI.
+        sdk.getUserData().then((userData: FarcasterUser | null) => {
+          if (userData) {
+            this.farcasterUser.set(userData);
+          }
+        }).catch((error: any) => {
+            console.error('Failed to get Farcaster user data:', error);
+        });
+
       } catch (error) {
-        console.error('Failed to initialize MiniApp SDK or get user data:', error);
-      } finally {
-        // Now that the app is visible and data is fetched (or failed), show the start screen.
+        console.error('Failed to signal ready state to MiniApp SDK:', error);
+        // If ready() fails, we should still try to show the game to the user.
         this.gameState.set('start');
       }
     } else {
@@ -165,6 +179,11 @@ export class AppComponent implements OnInit {
     const savedMode = localStorage.getItem('colorMemoryGameMode') as GameMode;
     if (savedMode) this.gameMode.set(savedMode);
     this.bestZenSequence.set(Number(localStorage.getItem('colorMemoryBestZen') || 0));
+
+    const history = localStorage.getItem('colorMemoryTaskHistory');
+    if (history) {
+      this.taskHistory.set(JSON.parse(history));
+    }
   }
 
   saveSettings() {
@@ -184,14 +203,38 @@ export class AppComponent implements OnInit {
   initializeDailyTask() {
     const today = new Date().toISOString().slice(0, 10);
     const lastTaskDate = localStorage.getItem('colorMemoryTaskDate');
-    
+
     if (lastTaskDate !== today) {
+      // A new day has started.
+      // 1. Archive the previous day's task if it exists.
+      const storedTaskJSON = localStorage.getItem('colorMemoryDailyTask');
+      if (lastTaskDate && storedTaskJSON) {
+        const oldTask: DailyTask = JSON.parse(storedTaskJSON);
+        const archivedTask: ArchivedTask = { ...oldTask, date: lastTaskDate };
+        this.taskHistory.update(history => {
+          // Prevent adding duplicates
+          if (history.find(t => t.date === archivedTask.date)) {
+            return history;
+          }
+          const newHistory = [...history, archivedTask];
+          // Keep history from getting too long
+          if (newHistory.length > 30) {
+            newHistory.shift(); // remove the oldest
+          }
+          return newHistory;
+        });
+        localStorage.setItem('colorMemoryTaskHistory', JSON.stringify(this.taskHistory()));
+      }
+
+      // 2. Generate a new task for today.
       this.generateNewDailyTask(today);
     } else {
+      // Same day. Load the existing task.
       const storedTask = localStorage.getItem('colorMemoryDailyTask');
       if (storedTask) {
         this.dailyTask.set(JSON.parse(storedTask));
       } else {
+        // Should not happen if date is set, but as a fallback:
         this.generateNewDailyTask(today);
       }
     }

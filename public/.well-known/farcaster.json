@@ -9,14 +9,14 @@
   },
   "miniapp": {
     "version": "1",
-    "name": "Renk Belleği",
+    "name": "Color Memory",
     "homeUrl": "https://base-app-colory.vercel.app/",
     "iconUrl": "https://i.imgur.com/KqH0s2C.png",
     "splashImageUrl": "https://i.imgur.com/KqH0s2C.png",
     "splashBackgroundColor": "#000000",
     "webhookUrl": "",
-    "subtitle": "RENKLİ",
-    "description": "Color Memory, hafızayı ve odaklanmayı geliştirmek için tasarlanmış basit ve eğlenceli bir oyundur. Oyunda, oyunculara hatırlamaları ve doğru sırayla tekrarlamaları gereken bir renk dizisi gösterilir. Seviyeler ilerledikçe, diziler daha uzun ve daha zorlu hale gelir. Bu oyun sadece eğlendirmekle kalmaz, aynı zamanda kısa süreli hafızayı, dikkat ve konsantrasyon becerilerini güçlendirmeye de yardımcı olur. Eğlenirken beyinlerini çalıştırmak isteyen hem çocuklar hem de yetişkinler için uygundur.",
+    "subtitle": "VIBRANT",
+    "description": "Color Memory is a simple and fun game designed to improve memory and focus. In the game, players are shown a sequence of colors that they must remember and repeat in the correct order. As the levels progress, the sequences become longer and more challenging. This game not only entertains but also helps to strengthen short-term memory, attention, and concentration skills. It is suitable for both children and adults who want to exercise their brains while having fun.",
     "screenshotUrls": [
       "https://i.imgur.com/KqH0s2C.png"
     ],
@@ -24,8 +24,8 @@
     "tags": ["memory", "game", "colors"],
     "heroImageUrl": "https://i.imgur.com/KqH0s2C.png",
     "tagline": "Test your memory",
-    "ogTitle": "Renk Belleği",
-    "ogDescription": "Color Memory, hafızayı ve odaklanmayı geliştirmek için tasarlanmış basit ve eğlenceli bir oyundur.",
+    "ogTitle": "Color Memory",
+    "ogDescription": "Color Memory is a simple and fun game designed to improve memory and focus.",
     "ogImageUrl": "https://i.imgur.com/KqH0s2C.png",
     "noindex": true
   }
